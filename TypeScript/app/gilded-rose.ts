@@ -18,52 +18,64 @@ export class GildedRose {
   }
 
   updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
+    this.items.forEach(item => {
+      // Sulfuras never sold, never decreases in quality
+      if (item.name === 'Sulfuras, Hand of Ragnaros') {
+        return
       }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
-      }
-    }
 
-    return this.items;
+      // Decrement first since all items have a sell in date except Sulfuras
+      // That's the assumption I made with "never sold" in the requirements
+      item.sellIn--
+
+      // Rereading the requirements, I feel like I should have gone with "includes" for better future expansion
+      switch(item.name) {
+        case 'Aged Brie': {
+          item.sellIn >= 0 ? this.increaseQuality(item, 1) : this.increaseQuality(item, 2)
+          return
+        }
+        // This is where checking the string for containing the word backstage would have been better
+        case 'Backstage passes to a TAFKAL80ETC concert': {
+          if (item.sellIn <= 0) {
+            item.quality = 0
+            return
+          }
+
+          if (item.sellIn < 10 && item.sellIn > 5) {
+            this.increaseQuality(item, 2)
+          } else if(item.sellIn < 5) {
+            this.increaseQuality(item, 3)
+          } else {
+            this.increaseQuality(item, 1)
+          }
+          return
+        }
+        case 'Conjured': {
+          item.sellIn >= 0 ? this.decreaseQuality(item, 2) : this.decreaseQuality(item, 4)
+          return
+        }
+        default: {
+          // If it's not a special item, decrease the quality
+          item.sellIn >= 0 ? this.decreaseQuality(item, 1) : this.decreaseQuality(item, 2)
+          return
+        }
+      }
+    });
+
+    return this.items
+  }
+
+  // Items never have a quality above 50
+  // I could have also done checks at the beginning of the function too
+  // ¯\_(ツ)_/¯
+  private increaseQuality(item: Item, value: number) {
+    item.quality = item.quality + value
+    item.quality = item.quality > 50 ? 50 : item.quality
+  }
+
+  // Items never go below 0
+  private decreaseQuality(item: Item, value: number) {
+    item.quality = item.quality - value
+    item.quality = item.quality < 0 ? 0 : item.quality
   }
 }
