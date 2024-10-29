@@ -4,12 +4,13 @@
   "description": "Gilded Rose kata in TypeScript",
   "scripts": {
     "precompile": "rimraf app/**/*.js test/**/*.js",
-    "compile": "tsc",
+    "compile": "tsc --skipLibCheck",
     "pretest": "rimraf app/**/*.js test/**/*.js",
     "test:jest": "jest",
     "test:jest:watch": "jest --watchAll",
     "test:mocha": "nyc mocha",
-    "test:vitest": "vitest --coverage"
+    "test:vitest": "vitest --coverage",
+    "compile:test": "tsc --skipLibCheck && jest"
   },
   "license": "MIT",
   "private": true,
